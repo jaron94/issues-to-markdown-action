@@ -17,6 +17,15 @@ def extract_image_urls(issue_body):
     urls = re.findall(pattern, issue_body)
     return urls
 
+def resolve_issue_links(repo, issue_body):
+    # Regular expression to find issue links
+    pattern = r'#(\d+)'
+    issue_numbers = re.findall(pattern, issue_body)
+    for issue_number in issue_numbers:
+        issue_body = issue_body.replace(f'#{issue_number}', f'[#{issue_number}](https://github.com/{repo}/issues/{issue_number})')
+    return issue_body
+            
+
 def download_and_save_image(url, issue_number):
     try:
         response = requests.get(url)
@@ -36,7 +45,7 @@ def download_and_save_image(url, issue_number):
         print(f"Error downloading image {url}: {e}")
         return None
 
-def save_issue(issue):
+def save_issue(repo, issue):
     try:
         title = issue.get('title', 'Untitled').replace(' ', '_')
         filename = f"{issue.get('number', 'Unknown')}_{title}.md"
@@ -58,7 +67,7 @@ def main():
     try:
         issues = get_issues(repo, token, 'done')
         for issue in issues:
-            save_issue(issue)
+            save_issue(repo, issue)
     except Exception as e:
         print(f"Error fetching issues: {e}")
 
